@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "987907829931-d74o802e9halb3vu76cofcn3h7jj00p2.apps.googleusercontent.com",
+          "client_id": "987907829931-k6smh9kfns0grqp59j850baena5auk25.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.scholarship",
-            "certificate_hash": "55dedabc3dcd043b385179843b55fcc8432c5919"
+            "certificate_hash": "c8555b01203a034ab2c541ae16233931ce35048b"
           }
         },
         {
