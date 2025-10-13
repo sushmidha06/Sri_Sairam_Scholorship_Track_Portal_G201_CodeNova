@@ -367,7 +367,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     icon: Image.asset(
-                      'assets/images/google_logo.png',
+                      'assets/images/google.png',
                       height: 20,
                       width: 20,
                       errorBuilder: (context, error, stackTrace) {

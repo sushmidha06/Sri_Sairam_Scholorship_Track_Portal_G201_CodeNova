@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 <<<<<<< HEAD
@@ -6,11 +7,20 @@ import 'package:scholarship/feature/Main_user/Main_page/Profile_Page/screens/pro
 import 'firebase_options.dart';
 =======
 import 'package:firebase_core/firebase_core.dart';
+=======
+>>>>>>> main
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:scholarship/pages/home_page.dart';
+import 'package:scholarship/pages/login_page.dart';
 import 'firebase_options.dart';
+<<<<<<< HEAD
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
 >>>>>>> dev_sushmidha
+=======
+>>>>>>> main
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,9 +28,12 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   
 >>>>>>> dev_sushmidha
+=======
+>>>>>>> main
   runApp(const MyApp());
 }
 

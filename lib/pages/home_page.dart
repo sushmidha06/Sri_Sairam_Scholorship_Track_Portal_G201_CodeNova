@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
+<<<<<<< HEAD
+=======
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scholarship/pages/Search_Page/screens/scholarship_search_screen.dart';
+import 'package:scholarship/pages/chat/chat_page.dart';
+>>>>>>> main
 import '../services/google_auth_service.dart';
 import '../services/firestore_service.dart';
 
@@ -8,15 +14,17 @@ import '../services/firestore_service.dart';
 /// Color Palette
 /// ----------------
 class AppColors {
-  static const Color primaryTeal = Color(0xFF009688); // main teal
+  static const Color darkTeal = Color(0xFF009688); // main teal
   static const Color secondaryLight = Color(0xFFB2DFDB);
-  static const Color darkTeal = Color(0xFF00695C);
-  static const Color accentGold = Color(0xFFFFC107);
-  static const Color bgLight = Color(0xFFE0F2F1);
+  static const Color primaryTeal = Color(0xFF00695C);
+  static const Color accentGold = Colors.orange;
+  static const Color bgLight = Color(0xFFF9F9F9);  // Light white background
   static const Color cardWhite = Color(0xFFFFFFFF);
+  static const Color errorWhite = Color(0xFFF5F5F5);  // Slightly off-white
   static const Color errorRed = Color(0xFFE53935);
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF555555);
+  static const Color scaffoldBackground = Color(0xFFF5F7FA);  // Light grayish white
 }
 
 /// ----------------
@@ -168,9 +176,15 @@ class _HomePageState extends State<HomePage> {
   /// Show Profile Edit Dialog
   void _showProfileEditDialog() {
     final TextEditingController nameController = TextEditingController(text: _getUserDisplayName());
+<<<<<<< HEAD
     final TextEditingController phoneController = TextEditingController(text: '+91 9876543210');
     final TextEditingController categoryController = TextEditingController(text: 'General');
     final TextEditingController cgpaController = TextEditingController(text: '9.1');
+=======
+    final TextEditingController phoneController = TextEditingController(text: _getPhoneNumber());
+    final TextEditingController categoryController = TextEditingController(text: _getCategory());
+    final TextEditingController cgpaController = TextEditingController(text: _getCGPA());
+>>>>>>> main
 
     showDialog(
       context: context,
@@ -178,7 +192,11 @@ class _HomePageState extends State<HomePage> {
         return AlertDialog(
           title: Row(
             children: [
+<<<<<<< HEAD
               Icon(Icons.edit, color: AppColors.primaryTeal),
+=======
+              Icon(Icons.edit, color: AppColors.darkTeal),
+>>>>>>> main
               SizedBox(width: 8),
               Text('Edit Profile Details'),
             ],
@@ -243,7 +261,11 @@ class _HomePageState extends State<HomePage> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
+<<<<<<< HEAD
                 backgroundColor: AppColors.primaryTeal,
+=======
+                backgroundColor: AppColors.darkTeal,
+>>>>>>> main
                 foregroundColor: Colors.white,
               ),
               child: Text('Save Changes'),
@@ -257,6 +279,33 @@ class _HomePageState extends State<HomePage> {
   /// Save Profile Changes
   Future<void> _saveProfileChanges(String name, String phone, String category, String cgpa) async {
     try {
+<<<<<<< HEAD
+=======
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Text('Updating profile...'),
+              ],
+            ),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+>>>>>>> main
       // Update Firebase Auth display name
       await _currentUser?.updateDisplayName(name);
 
@@ -266,6 +315,7 @@ class _HomePageState extends State<HomePage> {
         'phoneNumber': phone,
         'category': category,
         'cgpa': cgpa,
+<<<<<<< HEAD
       });
 
       // Reload user data
@@ -276,15 +326,62 @@ class _HomePageState extends State<HomePage> {
           const SnackBar(
             content: Text('Profile updated successfully!'),
             backgroundColor: Colors.green,
+=======
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Force reload user data from Firestore
+      await _loadUserData();
+      
+      // Force refresh the current user from Firebase Auth
+      await _currentUser?.reload();
+
+      // Trigger a rebuild of the profile page with updated data
+      if (mounted) {
+        setState(() {
+          // This will trigger a rebuild with the new data
+        });
+
+        // Clear any existing snackbars and show success message
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 16),
+                Text('Profile updated successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+>>>>>>> main
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+<<<<<<< HEAD
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update profile: ${e.toString()}'),
             backgroundColor: Colors.red,
+=======
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error, color: Colors.white),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Text('Failed to update profile: ${e.toString()}'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+>>>>>>> main
           ),
         );
       }
@@ -452,6 +549,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.scaffoldBackground,
       body: _buildCurrentPage(),
       bottomNavigationBar: _buildBottomNav(),
     );
@@ -462,7 +560,7 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return _buildHomePage();
       case 1:
-        return _buildSearchPage();
+        return ScholarshipSearchScreen();
       case 2:
         return _buildChatPage();
       case 3:
@@ -476,52 +574,8 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
         controller: _scrollController,
         slivers: [
-          SliverAppBar(
-            expandedHeight: 80.0,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppColors.primaryTeal,
-            title: Text(
-              'Scholarship Track',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.language, color: Colors.white),
-                onPressed: () {},
-              ),
-              Stack(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.notifications_none, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 12,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: AppColors.accentGold,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.white24,
-                  child: Icon(Icons.person, color: Colors.white),
-                ),
-              ),
-            ],
+          SliverToBoxAdapter(
+            child: _buildCustomHeader(),
           ),
           SliverPersistentHeader(
             pinned: true,
@@ -586,13 +640,13 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(height: 8),
                 _buildRecommendedCarousel(topRated),
-                SizedBox(height: 18),
+                SizedBox(height: 10),
                 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: _buildSmartTools(),
                 ),
-                SizedBox(height: 18),
+                SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: _buildUpcomingDeadlines(upcoming),
@@ -615,291 +669,10 @@ class _HomePageState extends State<HomePage> {
       );
   }
 
-  Widget _buildSearchPage() {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Search Scholarships'),
-        backgroundColor: AppColors.primaryTeal,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Search Bar
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardWhite,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search scholarships...',
-                  prefixIcon: Icon(Icons.search, color: AppColors.primaryTeal),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Search Filters
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondaryLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text('All Categories', textAlign: TextAlign.center),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardWhite,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.secondaryLight),
-                    ),
-                    child: Text('Deadline', textAlign: TextAlign.center),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardWhite,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.secondaryLight),
-                    ),
-                    child: Text('Amount', textAlign: TextAlign.center),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            // Search Results
-            Expanded(
-              child: ListView.builder(
-                itemCount: allScholarships.length,
-                itemBuilder: (context, index) {
-                  final scholarship = allScholarships[index];
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 12),
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardWhite,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          scholarship.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          scholarship.eligibility,
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Deadline: ${_formatDate(scholarship.deadline)}',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryTeal,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: Text('View Details', style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+ 
 
   Widget _buildChatPage() {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('AI Chat Assistant'),
-        backgroundColor: AppColors.primaryTeal,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.all(16),
-              children: [
-                // AI Message
-                Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryTeal,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondaryLight,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Hello! I\'m your scholarship assistant. I can help you find scholarships, check eligibility, and answer questions about applications. How can I help you today?',
-                            style: TextStyle(color: AppColors.textPrimary),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // User Message
-                Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryTeal,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'What scholarships are available for engineering students?',
-                            style: TextStyle(color: Colors.white),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.accentGold,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.person, color: AppColors.darkTeal, size: 20),
-                      ),
-                    ],
-                  ),
-                ),
-                // AI Response
-                Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryTeal,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondaryLight,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Great question! I found several engineering scholarships for you:\n\n• Engineering Excellence Grant\n• National Merit Scholarship\n• STEM Women Empowerment\n\nWould you like me to show you the details for any of these?',
-                            style: TextStyle(color: AppColors.textPrimary),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Chat Input
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.cardWhite,
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, -2))],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.bgLight,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Type your message...',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryTeal,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.send, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return const ChatPage();      
   }
 
   Widget _buildProfilePage() {
@@ -918,7 +691,11 @@ class _HomePageState extends State<HomePage> {
                     height: 180,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
+<<<<<<< HEAD
                         colors: [AppColors.primaryTeal, AppColors.primaryTeal.withOpacity(0.6)],
+=======
+                        colors: [AppColors.darkTeal, AppColors.darkTeal.withOpacity(0.6)],
+>>>>>>> main
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -996,7 +773,11 @@ class _HomePageState extends State<HomePage> {
                 title: 'Edit Details (Secured)',
                 icon: Icons.lock_outline,
                 content: ListTile(
+<<<<<<< HEAD
                   leading: Icon(Icons.fingerprint, color: AppColors.primaryTeal),
+=======
+                  leading: Icon(Icons.fingerprint, color: AppColors.darkTeal),
+>>>>>>> main
                   title: Text('Use Biometric Authentication'),
                   subtitle: Text('Secure your profile updates'),
                   contentPadding: EdgeInsets.zero,
@@ -1013,9 +794,15 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _detailRow('Full Name', _getUserDisplayName()),
                     _detailRow('Email', _getUserEmail()),
+<<<<<<< HEAD
                     _detailRow('Phone', '+91 9876543210'),
                     _detailRow('Category', 'General'),
                     _detailRow('CGPA', '9.1'),
+=======
+                    _detailRow('Phone', _getPhoneNumber()),
+                    _detailRow('Category', _getCategory()),
+                    _detailRow('CGPA', _getCGPA()),
+>>>>>>> main
                   ],
                 ),
               ),
@@ -1076,6 +863,33 @@ class _HomePageState extends State<HomePage> {
     return _currentUser?.email ?? 'No email';
   }
 
+  String _getPhoneNumber() {
+    // Try Firestore data first
+    if (_firestoreUserData?['phoneNumber'] != null) {
+      return _firestoreUserData!['phoneNumber'];
+    }
+    // Fallback to Firebase Auth data or default
+    return _currentUser?.phoneNumber ?? '+91 9876543210';
+  }
+
+  String _getCategory() {
+    // Try Firestore data first
+    if (_firestoreUserData?['category'] != null) {
+      return _firestoreUserData!['category'];
+    }
+    // Default value
+    return 'General';
+  }
+
+  String _getCGPA() {
+    // Try Firestore data first
+    if (_firestoreUserData?['cgpa'] != null) {
+      return _firestoreUserData!['cgpa'];
+    }
+    // Default value
+    return '9.1';
+  }
+
   Widget _buildUserAvatar() {
     final user = _currentUser;
     // Try Firestore photo URL first, then Firebase Auth
@@ -1087,7 +901,11 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       child: CircleAvatar(
         radius: 46,
+<<<<<<< HEAD
         backgroundColor: AppColors.primaryTeal,
+=======
+        backgroundColor: AppColors.darkTeal,
+>>>>>>> main
         backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
         child: photoUrl == null 
           ? Text(
@@ -1121,7 +939,11 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
+<<<<<<< HEAD
               Icon(icon, color: AppColors.primaryTeal),
+=======
+              Icon(icon, color: AppColors.darkTeal),
+>>>>>>> main
               SizedBox(width: 8),
               Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             ],
@@ -1140,7 +962,11 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey[700])),
+<<<<<<< HEAD
           Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryTeal)),
+=======
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkTeal)),
+>>>>>>> main
         ],
       ),
     );
@@ -1188,6 +1014,256 @@ class _HomePageState extends State<HomePage> {
   /// Widgets
   /// ----------------
 
+  Widget _buildCustomHeader() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 50, 20, 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+        gradient: LinearGradient(
+          colors: [AppColors.darkTeal, AppColors.darkTeal.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Row with Profile and Notification
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Profile Section
+                Row(
+                  children: [
+                    Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildHeaderAvatar(),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello,',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Text(
+                          _getFirstName(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                // Notification Icon
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Stack(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.notifications_outlined,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        onPressed: () {
+                          // Handle notification tap
+                          _showNotifications();
+                        },
+                      ),
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentGold,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.white, width: 1),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '3',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            // Welcome Message
+            Text(
+              'Find Your Perfect Scholarship',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Discover opportunities that match your profile',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderAvatar() {
+    final user = _currentUser;
+    final photoUrl = _firestoreUserData?['photoURL'] ?? user?.photoURL;
+    final displayName = _getUserDisplayName();
+    
+    if (photoUrl != null) {
+      return Image.network(
+        photoUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildHeaderFallbackAvatar(displayName);
+        },
+      );
+    } else {
+      return _buildHeaderFallbackAvatar(displayName);
+    }
+  }
+
+  Widget _buildHeaderFallbackAvatar(String displayName) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(
+          displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getFirstName() {
+    final fullName = _getUserDisplayName();
+    if (fullName.contains(' ')) {
+      return fullName.split(' ')[0];
+    }
+    return fullName;
+  }
+
+  void _showNotifications() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(Icons.notifications, color: AppColors.darkTeal),
+                SizedBox(width: 8),
+                Text(
+                  'Notifications',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: AppColors.darkTeal.withOpacity(0.1),
+                child: Icon(Icons.check_circle, color: AppColors.darkTeal),
+              ),
+              title: Text('Scholarship Application Approved'),
+              subtitle: Text('Your AICTE application has been approved'),
+              trailing: Text('2h ago', style: TextStyle(color: Colors.grey)),
+            ),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.orange.withOpacity(0.1),
+                child: Icon(Icons.pending, color: Colors.orange),
+              ),
+              title: Text('Document Verification Pending'),
+              subtitle: Text('Please upload your income certificate'),
+              trailing: Text('1d ago', style: TextStyle(color: Colors.grey)),
+            ),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue.withOpacity(0.1),
+                child: Icon(Icons.new_releases, color: Colors.blue),
+              ),
+              title: Text('New Scholarship Available'),
+              subtitle: Text('Merit-based scholarship for CS students'),
+              trailing: Text('3d ago', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildCategoryScroll() {
     final categories = [
@@ -1214,18 +1290,18 @@ class _HomePageState extends State<HomePage> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.secondaryLight,
+                  color: AppColors.darkTeal,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  icon: Icon(item['icon'] as IconData, color: AppColors.darkTeal),
+                  icon: Icon(item['icon'] as IconData, color: Colors.white),
                   onPressed: () {},
                 ),
               ),
               SizedBox(height: 6),
              Text(
   item['label'] as String,
-  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+  style: TextStyle(fontSize: 12, color: AppColors.darkTeal),
 ),
 
             ],
@@ -1237,11 +1313,18 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Text(
-        title,
-        style: TextStyle(
-            color: AppColors.darkTeal, fontSize: 16, fontWeight: FontWeight.w600),
+      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0, bottom: 4.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: TextStyle(
+            color: AppColors.darkTeal,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
+          ),
+        ),
       ),
     );
   }
@@ -1297,7 +1380,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.darkTeal,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1345,7 +1428,7 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () {},
                     child: Text(
                       'Apply Now',
-                      style: TextStyle(color: AppColors.darkTeal),
+                      style: TextStyle(color: Colors.white),
                     ),
                   )
                 ],
@@ -1358,66 +1441,73 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSmartTools() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Smart Tools',
-          style: TextStyle(
-            color: AppColors.darkTeal,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Smart Tools',
+        style: TextStyle(
+          color: AppColors.darkTeal,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
         ),
-        SizedBox(height: 10),
-        GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: smartTools.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 0.8,
-          ),
-          itemBuilder: (context, index) {
-            final t = smartTools[index];
-            return Column(
-              children: [
-                GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardWhite,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 6)
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        t['icon'] as IconData,
-                        size: 24,
-                        color: AppColors.primaryTeal,
-                      ),
+      ),
+      const SizedBox(height: 4),  // Reduced from 5
+      GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: smartTools.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          mainAxisSpacing: 4,  // Reduced from 8
+          crossAxisSpacing: 4,  // Reduced from 8
+          childAspectRatio: 0.7, // Adjusted from 0.8 to make items more compact
+        ),
+        itemBuilder: (context, index) {
+          final t = smartTools[index];
+          return Column(
+            mainAxisSize: MainAxisSize.min,  // Added to make the column take minimum space
+            children: [
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  width: 56,  // Reduced from 64
+                  height: 56, // Reduced from 64
+                  decoration: BoxDecoration(
+                    color: AppColors.cardWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 4)  // Reduced blur
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      t['icon'] as IconData,
+                      size: 20,  // Reduced from 24
+                      color: AppColors.darkTeal,
                     ),
                   ),
                 ),
-                SizedBox(height: 6),
-                Text(
-                  t['title']!,
-                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),  // Reduced from 6
+              Text(
+                t['title']!,
+                style: const TextStyle(
+                  fontSize: 10,  // Reduced from 11
+                  color: AppColors.textSecondary,
+                  height: 1.1,   // Tighter line height
                 ),
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
+                textAlign: TextAlign.center,
+                maxLines: 2,     // Ensure text wraps to a second line if needed
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          );
+        },
+      ),
+    ],
+  );
+}
 
   Widget _buildUpcomingDeadlines(List<Scholarship> items) {
     return Column(
@@ -1492,7 +1582,7 @@ class _HomePageState extends State<HomePage> {
                       ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryTeal,
+                          backgroundColor: AppColors.darkTeal,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -1599,7 +1689,7 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.primaryTeal, AppColors.secondaryLight],
+              colors: [AppColors.darkTeal, AppColors.secondaryLight],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -1653,7 +1743,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text(
                         'Sign Up Free', 
                         style: TextStyle(
-                          color: AppColors.darkTeal,
+                          color: Colors.white,
                           fontSize: isSmallScreen ? 12 : 14,
                         ),
                       ),
@@ -1684,27 +1774,115 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      backgroundColor: Colors.white,
-      selectedItemColor: AppColors.primaryTeal,
-      unselectedItemColor: AppColors.textSecondary,
-      showUnselectedLabels: true,
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-        BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Chat'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.08),
+          blurRadius: 20,
+          offset: const Offset(0, -4),
+        ),
       ],
-      currentIndex: currentPageIndex,
-      onTap: (index) {
+    ),
+    child: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(
+              icon: Icons.home_rounded,
+              label: 'Home',
+              index: 0,
+              isSelected: currentPageIndex == 0,
+            ),
+            _buildNavItem(
+              icon: Icons.search_rounded,
+              label: 'Search',
+              index: 1,
+              isSelected: currentPageIndex == 1,
+            ),
+            _buildNavItem(
+              icon: Icons.chat_bubble_rounded,
+              label: 'Chat',
+              index: 2,
+              isSelected: currentPageIndex == 2,
+            ),
+            _buildNavItem(
+              icon: Icons.person_rounded,
+              label: 'Profile',
+              index: 3,
+              isSelected: currentPageIndex == 3,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildNavItem({
+  required IconData icon,
+  required String label,
+  required int index,
+  required bool isSelected,
+}) {
+  return Expanded(
+    child: InkWell(
+      onTap: () {
         setState(() {
           currentPageIndex = index;
         });
       },
-      type: BottomNavigationBarType.fixed,
-    );
-  }
-
+      borderRadius: BorderRadius.circular(16),
+      splashColor: AppColors.darkTeal.withOpacity(0.1),
+      highlightColor: AppColors.darkTeal.withOpacity(0.05),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              padding: EdgeInsets.all(isSelected ? 8 : 6),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? AppColors.darkTeal.withOpacity(0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected 
+                    ? AppColors.darkTeal
+                    : AppColors.textSecondary,
+                size: isSelected ? 26 : 24,
+              ),
+            ),
+            const SizedBox(height: 6),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              style: TextStyle(
+                fontSize: isSelected ? 12.5 : 11.5,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected 
+                    ? AppColors.darkTeal
+                    : AppColors.textSecondary,
+                letterSpacing: 0.2,
+              ),
+              child: Text(label),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
   String _formatDate(DateTime dt) {
     // Simple formatting e.g., 12 Oct
     // If you add intl package, you can use DateFormat('d MMM')
@@ -1798,15 +1976,15 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primaryTeal : AppColors.cardWhite,
+                      color: isSelected ? AppColors.darkTeal : AppColors.cardWhite,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isSelected ? AppColors.primaryTeal : AppColors.secondaryLight,
+                        color: isSelected ? AppColors.darkTeal : AppColors.secondaryLight,
                         width: 1,
                       ),
                       boxShadow: isSelected ? [
                         BoxShadow(
-                          color: AppColors.primaryTeal.withOpacity(0.3),
+                          color: AppColors.darkTeal.withOpacity(0.3),
                           blurRadius: 4,
                           offset: Offset(0, 2),
                         )

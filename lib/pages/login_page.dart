@@ -33,26 +33,46 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      print('Attempting to sign in with email: ${_emailController.text.trim()}');
+      
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       
+      print('Sign-in successful for user: ${userCredential.user?.email}');
+      
       // Update last sign-in time in Firestore
-      await FirestoreService.updateLastSignIn();
+      try {
+        await FirestoreService.updateLastSignIn();
+        print('Last sign-in time updated in Firestore');
+      } catch (e) {
+        print('Failed to update last sign-in (non-critical): $e');
+        // Don't block the user from logging in if this fails
+      }
       
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Signed in successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
         Navigator.of(context).pushReplacementNamed('/home');
       }
     } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException: ${e.code} - ${e.message}');
+      
       String message = 'An error occurred';
       
       switch (e.code) {
         case 'user-not-found':
-          message = 'No user found for that email.';
+          message = 'No account found with this email. Please sign up first.';
           break;
         case 'wrong-password':
-          message = 'Wrong password provided.';
+          message = 'Incorrect password. Please try again.';
           break;
         case 'invalid-email':
           message = 'The email address is not valid.';
@@ -60,8 +80,17 @@ class _LoginPageState extends State<LoginPage> {
         case 'user-disabled':
           message = 'This user account has been disabled.';
           break;
+        case 'invalid-credential':
+          message = 'Invalid email or password. Please check and try again.';
+          break;
+        case 'too-many-requests':
+          message = 'Too many failed attempts. Please try again later.';
+          break;
+        case 'network-request-failed':
+          message = 'Network error. Please check your internet connection.';
+          break;
         default:
-          message = e.message ?? 'An error occurred';
+          message = e.message ?? 'An error occurred during sign in';
       }
       
       if (mounted) {
@@ -69,15 +98,19 @@ class _LoginPageState extends State<LoginPage> {
           SnackBar(
             content: Text(message),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     } catch (e) {
+      print('Unexpected error during sign in: $e');
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('An unexpected error occurred'),
+          SnackBar(
+            content: Text('An unexpected error occurred: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -96,17 +129,54 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
+      print('Starting Google Sign-In...');
+      
       final userCredential = await GoogleAuthService.signInWithGoogle();
       
-      if (userCredential != null && mounted) {
+      if (userCredential == null) {
+        print('Google Sign-In was cancelled by user');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Google Sign-In was cancelled'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+      
+      print('Google Sign-In successful: ${userCredential.user?.email}');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Signed in with Google successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
         Navigator.of(context).pushReplacementNamed('/home');
       }
     } catch (e) {
+      print('Google Sign-In error: $e');
+      
       if (mounted) {
+        String errorMessage = e.toString();
+        
+        // Clean up error message
+        if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11);
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -158,6 +228,8 @@ class _LoginPageState extends State<LoginPage> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       hintText: 'Enter your email',
@@ -180,6 +252,8 @@ class _LoginPageState extends State<LoginPage> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _signIn(),
                     decoration: InputDecoration(
                       labelText: 'Password',
                       hintText: 'Enter your password',
@@ -235,6 +309,11 @@ class _LoginPageState extends State<LoginPage> {
                   TextButton(
                     onPressed: () {
                       // TODO: Implement forgot password
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Forgot password feature coming soon!'),
+                        ),
+                      );
                     },
                     child: Text(
                       'Forgot Password?',
@@ -244,7 +323,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Divider with "OR"
                   Row(
                     children: [
                       Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
@@ -262,7 +340,6 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  // Google Sign-In Button
                   OutlinedButton.icon(
                     onPressed: _isLoading ? null : _signInWithGoogle,
                     style: OutlinedButton.styleFrom(
@@ -274,16 +351,10 @@ class _LoginPageState extends State<LoginPage> {
                         color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
-                    icon: Image.asset(
-                      'assets/images/google_logo.png',
-                      height: 20,
-                      width: 20,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.login,
-                          color: Theme.of(context).colorScheme.primary,
-                        );
-                      },
+                    icon: Icon(
+                      Icons.g_mobiledata,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24,
                     ),
                     label: Text(
                       'Continue with Google',
