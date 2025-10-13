@@ -1,30 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:scholarship/feature/Main_user/Main_page/Search_Page/screens/scholarship_search_screen.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Scholarship Search',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.teal,
+        scaffoldBackgroundColor: Colors.white,
       ),
-      home: const MyHomePage(),
+      home: const ScholarshipSearchScreen(),
     );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
