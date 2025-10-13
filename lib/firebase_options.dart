@@ -85,4 +85,8 @@ class DefaultFirebaseOptions {
     storageBucket: 'scholarship-573db.firebasestorage.app',
     measurementId: 'G-TN9KZJG32W',
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> dev_sushmidha
