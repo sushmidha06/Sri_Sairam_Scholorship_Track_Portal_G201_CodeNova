@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:local_auth/local_auth.dart';
 import '../services/google_auth_service.dart';
 import '../services/firestore_service.dart';
 
@@ -49,6 +50,7 @@ class _HomePageState extends State<HomePage> {
   int currentPageIndex = 0;
   String selectedFilter = 'All';
   Map<String, dynamic>? _firestoreUserData;
+  final LocalAuthentication _localAuth = LocalAuthentication();
 
   @override
   void initState() {
@@ -88,6 +90,200 @@ class _HomePageState extends State<HomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Error signing out'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Biometric Authentication for Profile Editing
+  Future<void> _authenticateAndEditProfile() async {
+    try {
+      // Check if biometric authentication is available
+      final bool isAvailable = await _localAuth.canCheckBiometrics;
+      final bool isDeviceSupported = await _localAuth.isDeviceSupported();
+
+      if (!isAvailable || !isDeviceSupported) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Biometric authentication is not available on this device'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Get available biometric types
+      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+      
+      if (availableBiometrics.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No biometric authentication methods are set up'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Perform biometric authentication
+      final bool didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Please authenticate to edit your profile details',
+        options: const AuthenticationOptions(
+          biometricOnly: false,
+          stickyAuth: true,
+        ),
+      );
+
+      if (didAuthenticate) {
+        // Authentication successful, show profile edit dialog
+        _showProfileEditDialog();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Authentication failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Authentication error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Show Profile Edit Dialog
+  void _showProfileEditDialog() {
+    final TextEditingController nameController = TextEditingController(text: _getUserDisplayName());
+    final TextEditingController phoneController = TextEditingController(text: '+91 9876543210');
+    final TextEditingController categoryController = TextEditingController(text: 'General');
+    final TextEditingController cgpaController = TextEditingController(text: '9.1');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.edit, color: AppColors.primaryTeal),
+              SizedBox(width: 8),
+              Text('Edit Profile Details'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: categoryController,
+                  decoration: InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.category),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: cgpaController,
+                  decoration: InputDecoration(
+                    labelText: 'CGPA',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.grade),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _saveProfileChanges(
+                  nameController.text,
+                  phoneController.text,
+                  categoryController.text,
+                  cgpaController.text,
+                );
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryTeal,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Save Changes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Save Profile Changes
+  Future<void> _saveProfileChanges(String name, String phone, String category, String cgpa) async {
+    try {
+      // Update Firebase Auth display name
+      await _currentUser?.updateDisplayName(name);
+
+      // Update Firestore with additional details
+      await FirestoreService.updateUserProfile({
+        'displayName': name,
+        'phoneNumber': phone,
+        'category': category,
+        'cgpa': cgpa,
+      });
+
+      // Reload user data
+      await _loadUserData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -708,146 +904,141 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildProfilePage() {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: AppColors.primaryTeal,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile Header
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.cardWhite,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
-              ),
-              child: Column(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: 20),
+          child: Column(
+            children: [
+              // Header with gradient
+              Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  _buildUserAvatar(),
-                  SizedBox(height: 16),
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.primaryTeal, AppColors.primaryTeal.withOpacity(0.6)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(24),
+                        bottomRight: Radius.circular(24),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Icon(Icons.settings, color: Colors.white),
+                              Text(
+                                'Scholarship Tracker',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.logout, color: Colors.white),
+                                onPressed: _signOut,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 120,
+                    left: 0,
+                    right: 0,
+                    child: _buildUserAvatar(),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 50),
+
+              // Student name and details
+              Column(
+                children: [
                   Text(
                     _getUserDisplayName(),
                     style: TextStyle(
+                      color: Colors.black,
                       fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 4),
-                  Text(
-                    _getUserEmail(),
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            '12',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryTeal,
-                            ),
-                          ),
-                          Text('Applied', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '3',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green,
-                            ),
-                          ),
-                          Text('Approved', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '₹2.5L',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.accentGold,
-                            ),
-                          ),
-                          Text('Received', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        ],
-                      ),
-                    ],
-                  ),
+                  Text('B.Tech - Computer Science', style: TextStyle(color: Colors.grey)),
+                  SizedBox(height: 4),
+                  Text(_getUserEmail(), style: TextStyle(color: Colors.grey)),
                 ],
               ),
-            ),
-            SizedBox(height: 20),
-            // Profile Options
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardWhite,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+
+              // Dashboard
+              _sectionCard(
+                title: 'Dashboard',
+                icon: Icons.dashboard_rounded,
+                content: Column(
+                  children: [
+                    _dashboardItem('Active Scholarships', '3'),
+                    _dashboardItem('Pending Applications', '1'),
+                    _dashboardItem('Completed Applications', '5'),
+                  ],
+                ),
               ),
-              child: Column(
-                children: [
-                  _profileOption(Icons.person_outline, 'Personal Information'),
-                  _profileOption(Icons.school_outlined, 'Academic Details'),
-                  _profileOption(Icons.attach_money, 'Financial Information'),
-                  _profileOption(Icons.description_outlined, 'Documents'),
-                  _profileOption(Icons.notifications_outlined, 'Notifications'),
-                  _profileOption(Icons.help_outline, 'Help & Support'),
-                  _profileOption(Icons.logout, 'Logout', isLast: true, onTap: _signOut),
-                ],
+
+              // Edit Details
+              _sectionCard(
+                title: 'Edit Details (Secured)',
+                icon: Icons.lock_outline,
+                content: ListTile(
+                  leading: Icon(Icons.fingerprint, color: AppColors.primaryTeal),
+                  title: Text('Use Biometric Authentication'),
+                  subtitle: Text('Secure your profile updates'),
+                  contentPadding: EdgeInsets.zero,
+                  onTap: _authenticateAndEditProfile,
+                ),
               ),
-            ),
-          ],
+
+              // Basic Details
+              _sectionCard(
+                title: 'Basic Details',
+                icon: Icons.person_outline,
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _detailRow('Full Name', _getUserDisplayName()),
+                    _detailRow('Email', _getUserEmail()),
+                    _detailRow('Phone', '+91 9876543210'),
+                    _detailRow('Category', 'General'),
+                    _detailRow('CGPA', '9.1'),
+                  ],
+                ),
+              ),
+
+              // Application History
+              _sectionCard(
+                title: 'Application History',
+                icon: Icons.history,
+                content: Column(
+                  children: [
+                    _historyItem('AICTE Pragati Scholarship', 'Approved', Colors.green),
+                    _historyItem('National Scholarship Portal', 'Pending', Colors.orange),
+                    _historyItem('Inspire Scholarship', 'Rejected', Colors.red),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _profileOption(IconData icon, String title, {bool isLast = false, VoidCallback? onTap}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: isLast ? null : Border(bottom: BorderSide(color: AppColors.bgLight, width: 1)),
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.secondaryLight,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: AppColors.primaryTeal, size: 20),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
-        onTap: onTap ?? () {},
-      ),
-    );
-  }
 
   /// ----------------
   /// User Data Methods
@@ -891,31 +1082,105 @@ class _HomePageState extends State<HomePage> {
     final photoUrl = _firestoreUserData?['photoURL'] ?? user?.photoURL;
     final displayName = _getUserDisplayName();
     
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: AppColors.primaryTeal,
-        borderRadius: BorderRadius.circular(12),
-        image: photoUrl != null 
-          ? DecorationImage(
-              image: NetworkImage(photoUrl),
-              fit: BoxFit.cover,
-            )
-          : null,
-      ),
-      child: photoUrl == null 
-        ? Center(
-            child: Text(
+    return CircleAvatar(
+      radius: 50,
+      backgroundColor: Colors.white,
+      child: CircleAvatar(
+        radius: 46,
+        backgroundColor: AppColors.primaryTeal,
+        backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+        child: photoUrl == null 
+          ? Text(
               displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
+            )
+          : null,
+      ),
+    );
+  }
+
+  /// ----------------
+  /// Profile Helper Methods
+  /// ----------------
+
+  Widget _sectionCard({required String title, required IconData icon, required Widget content}) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppColors.primaryTeal),
+              SizedBox(width: 8),
+              Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          SizedBox(height: 12),
+          content,
+        ],
+      ),
+    );
+  }
+
+  Widget _dashboardItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey[700])),
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryTeal)),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey[700])),
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+        ],
+      ),
+    );
+  }
+
+  Widget _historyItem(String scholarship, String status, Color color) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color, width: 1),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              scholarship, 
+              style: TextStyle(fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
             ),
-          )
-        : null,
+          ),
+          Text(status, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
