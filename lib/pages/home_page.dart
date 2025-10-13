@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
-<<<<<<< HEAD
-=======
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scholarship/pages/Search_Page/screens/scholarship_search_screen.dart';
 import 'package:scholarship/pages/chat/chat_page.dart';
->>>>>>> main
 import '../services/google_auth_service.dart';
 import '../services/firestore_service.dart';
 
@@ -176,15 +173,9 @@ class _HomePageState extends State<HomePage> {
   /// Show Profile Edit Dialog
   void _showProfileEditDialog() {
     final TextEditingController nameController = TextEditingController(text: _getUserDisplayName());
-<<<<<<< HEAD
-    final TextEditingController phoneController = TextEditingController(text: '+91 9876543210');
-    final TextEditingController categoryController = TextEditingController(text: 'General');
-    final TextEditingController cgpaController = TextEditingController(text: '9.1');
-=======
     final TextEditingController phoneController = TextEditingController(text: _getPhoneNumber());
     final TextEditingController categoryController = TextEditingController(text: _getCategory());
     final TextEditingController cgpaController = TextEditingController(text: _getCGPA());
->>>>>>> main
 
     showDialog(
       context: context,
@@ -192,11 +183,7 @@ class _HomePageState extends State<HomePage> {
         return AlertDialog(
           title: Row(
             children: [
-<<<<<<< HEAD
-              Icon(Icons.edit, color: AppColors.primaryTeal),
-=======
               Icon(Icons.edit, color: AppColors.darkTeal),
->>>>>>> main
               SizedBox(width: 8),
               Text('Edit Profile Details'),
             ],
@@ -261,11 +248,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-<<<<<<< HEAD
-                backgroundColor: AppColors.primaryTeal,
-=======
                 backgroundColor: AppColors.darkTeal,
->>>>>>> main
                 foregroundColor: Colors.white,
               ),
               child: Text('Save Changes'),
@@ -279,8 +262,6 @@ class _HomePageState extends State<HomePage> {
   /// Save Profile Changes
   Future<void> _saveProfileChanges(String name, String phone, String category, String cgpa) async {
     try {
-<<<<<<< HEAD
-=======
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -305,7 +286,6 @@ class _HomePageState extends State<HomePage> {
         );
       }
 
->>>>>>> main
       // Update Firebase Auth display name
       await _currentUser?.updateDisplayName(name);
 
@@ -315,18 +295,6 @@ class _HomePageState extends State<HomePage> {
         'phoneNumber': phone,
         'category': category,
         'cgpa': cgpa,
-<<<<<<< HEAD
-      });
-
-      // Reload user data
-      await _loadUserData();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
-=======
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
@@ -355,18 +323,11 @@ class _HomePageState extends State<HomePage> {
             ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
->>>>>>> main
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-<<<<<<< HEAD
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update profile: ${e.toString()}'),
-            backgroundColor: Colors.red,
-=======
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -381,7 +342,6 @@ class _HomePageState extends State<HomePage> {
             ),
             backgroundColor: Colors.red,
             duration: Duration(seconds: 4),
->>>>>>> main
           ),
         );
       }
@@ -691,11 +651,7 @@ class _HomePageState extends State<HomePage> {
                     height: 180,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-<<<<<<< HEAD
-                        colors: [AppColors.primaryTeal, AppColors.primaryTeal.withOpacity(0.6)],
-=======
                         colors: [AppColors.darkTeal, AppColors.darkTeal.withOpacity(0.6)],
->>>>>>> main
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -773,11 +729,7 @@ class _HomePageState extends State<HomePage> {
                 title: 'Edit Details (Secured)',
                 icon: Icons.lock_outline,
                 content: ListTile(
-<<<<<<< HEAD
-                  leading: Icon(Icons.fingerprint, color: AppColors.primaryTeal),
-=======
                   leading: Icon(Icons.fingerprint, color: AppColors.darkTeal),
->>>>>>> main
                   title: Text('Use Biometric Authentication'),
                   subtitle: Text('Secure your profile updates'),
                   contentPadding: EdgeInsets.zero,
@@ -794,15 +746,9 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _detailRow('Full Name', _getUserDisplayName()),
                     _detailRow('Email', _getUserEmail()),
-<<<<<<< HEAD
-                    _detailRow('Phone', '+91 9876543210'),
-                    _detailRow('Category', 'General'),
-                    _detailRow('CGPA', '9.1'),
-=======
                     _detailRow('Phone', _getPhoneNumber()),
                     _detailRow('Category', _getCategory()),
                     _detailRow('CGPA', _getCGPA()),
->>>>>>> main
                   ],
                 ),
               ),
@@ -901,11 +847,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       child: CircleAvatar(
         radius: 46,
-<<<<<<< HEAD
-        backgroundColor: AppColors.primaryTeal,
-=======
         backgroundColor: AppColors.darkTeal,
->>>>>>> main
         backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
         child: photoUrl == null 
           ? Text(
@@ -939,11 +881,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-<<<<<<< HEAD
-              Icon(icon, color: AppColors.primaryTeal),
-=======
               Icon(icon, color: AppColors.darkTeal),
->>>>>>> main
               SizedBox(width: 8),
               Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             ],
@@ -962,11 +900,7 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey[700])),
-<<<<<<< HEAD
-          Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryTeal)),
-=======
           Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkTeal)),
->>>>>>> main
         ],
       ),
     );
