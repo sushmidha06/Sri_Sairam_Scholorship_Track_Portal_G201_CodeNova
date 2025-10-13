@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "987907829931",
+    "project_id": "scholarship-573db",
+    "storage_bucket": "scholarship-573db.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987907829931:android:968e4288e71e54858307ee",
+        "android_client_info": {
+          "package_name": "com.example.scholarship"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "987907829931-d74o802e9halb3vu76cofcn3h7jj00p2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.scholarship",
+            "certificate_hash": "55dedabc3dcd043b385179843b55fcc8432c5919"
+          }
+        },
+        {
+          "client_id": "987907829931-o98ee1outjhh7qtcclqmk2ovc3n7g2el.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlKWyhKkMdv-LtyVsmLDt5CQImhs8vZHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "987907829931-o98ee1outjhh7qtcclqmk2ovc3n7g2el.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "987907829931-jlltg2e0d29ph1rndukh427kibnmhfbf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.scholarship"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
