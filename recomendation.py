@@ -10,6 +10,10 @@ EMBEDDING_MODEL = "gemini-embedding-001"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{EMBEDDING_MODEL}:embedContent?key={API_KEY}"
 
 def get_scholarship_data():
+    """
+    Simulates loading data from your database, where complextext criteria exist.
+    We create one text string for the AI to embed for each scholarship.
+    """
     return [
         {
             "id": "SCH_001",
@@ -30,10 +34,14 @@ def get_scholarship_data():
             "name": "National STEM Women's Fund",
             "purpose": "Higher Education",
             "text_to_embed": "Scholarship for female students pursuing STEM fields (Science, Technology, Engineering, Mathematics). Must maintain a high academic record.",
-            "mock_vector": None
-        },
+            "mock_vector": [0.2, 0.8, 0.1, 0.8, 0.9]
+        }
     ]
+
 def get_user_embedding(user_text):
+    """
+    Calls the Gemini API to convert the user's profile text into a vector embedding.
+    """
     payload = {
         "content": {"parts": [{"text": user_text}]},
         "taskType": "RETRIEVAL_DOCUMENT", 
@@ -62,11 +70,15 @@ def get_user_embedding(user_text):
     return None
 
 def calculate_similarity(vector_a, vector_b):
-
+    """Calculates the Cosine Similarity between two vectors. Higher score is better match."""
+    # Cosine distance is 1 - Cosine similarity. We return 1 - distance to get similarity.
     return 1 - cosine(vector_a, vector_b)
 
 def find_semantic_matches(user_profile, all_scholarships, user_vector, threshold=0.6):
-
+    """
+    Matches the user's profile vector against pre-calculated scholarship vectors.
+    (MOCKING PRE-CALCULATED SCHOLARSHIP VECTORS)
+    """
     results = []
     mock_vectors = {
         "SCH_001": [0.1, 0.9, 0.2, 0.5, 0.3],  
